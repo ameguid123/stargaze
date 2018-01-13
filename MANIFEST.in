@@ -1,0 +1,8 @@
+exclude .gitignore
+include LICENSE.txt
+include README.rst
+include setup.cfg
+prune .cache
+prune .git
+prune build
+prune dist
