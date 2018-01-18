@@ -1,32 +1,40 @@
-import json
-import requests
-import ephem
-from datetime import datetime
+"""
+stargaze
+
+Usage:
+  stargaze visible
+  stargaze -h | --help
+  stargaze --version
+
+Options:
+  -h --help                 Show this screen.
+  --version                 Show version.
+
+Examples:
+  stargaze visible
+
+Help:
+  For help, please see the Github repository:
+  https://github.com/ameguid123/stargaze
+"""
+
+from docopt import docopt
+from inspect import getmembers, isclass
+from . import __version__ as VERSION
+# Framework credit to:
+# https://stormpath.com/blog/building-simple-cli-interfaces-in-python
+
+
 def main():
-    usr = create_observer(get_location())
-    sun_test(usr)
-
-def get_location():
-    """Get user's latitude and longitude using freegeoip.net"""
-    req = (requests.get('http://freegeoip.net/json'))
-    loc = json.loads(req.text)
-    return (str(loc['latitude']), str(loc['longitude']))
-
-def create_observer(usr_coords):
-    """Create PyEphem observer using user latitude/longitude and UTC time"""
-    usr = ephem.Observer()
-    usr.lat, usr.lon = usr_coords
-    usr.date = datetime.utcnow()
-    return usr
-
-def sun_test(obs):
-    """Sun's altitude/azimuth and rise/noon/set time for PyEphem observer"""
-    sun = ephem.Sun()
-    sun.compute(obs)
-    print("sun altitude: %s, sun azimuth: %s" % (sun.alt, sun.az))
-    print("sun rise time: %s" % obs.previous_rising(sun))
-    print("solar noon: %s "% obs.next_transit(sun))
-    print("sunset time: %s" % obs.next_setting(sun))
- 
-if __name__ == "__main__":
-    main()
+    """CLI entrypoint"""
+    import stargaze.commands
+    options = docopt(__doc__, version=VERSION)
+    for key, val in options.items():
+        module = getattr(stargaze.commands, key, None)
+        if module and val:
+            cmds = getmembers(module, isclass)
+            # cmd[1] is the class, cmd[0] is the class name
+            # CommandTemplate is in the respective module b/c inheritance
+            cmd = [cmd[1] for cmd in cmds if cmd[0] != 'CommandTemplate'][0]
+            cmd = cmd(options)
+            cmd.run()
