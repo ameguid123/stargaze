@@ -33,6 +33,9 @@ class CommandTemplate:
     """Template from which all commands will inherit"""
     usr = create_observer(get_location())
 
+    planets = ['Mercury', 'Venus', 'Mars', 'Jupiter',
+               'Saturn', 'Uranus', 'Neptune']
+
     def __init__(self, options, *args, **kwargs):
         self.options = options
         self.args = args
