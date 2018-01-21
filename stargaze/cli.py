@@ -21,12 +21,16 @@ Help:
 from docopt import docopt
 from inspect import getmembers, isclass
 from . import __version__ as VERSION
+from colorama import init
+
 # Framework credit to:
 # https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 
 
 def main():
     """CLI entrypoint"""
+    from colorama import init
+    init()
     import stargaze.commands
     options = docopt(__doc__, version=VERSION)
     for key, val in options.items():
