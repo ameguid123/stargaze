@@ -19,6 +19,7 @@ def create_observer(usr_coords):
     return usr
 
 
+# NOTE: returns the time in UTC (as for all PyEphem functions)
 def sun_test(obs):
     """Sun's altitude/azimuth and rise/noon/set time for PyEphem observer"""
     sun = ephem.Sun()
@@ -33,8 +34,10 @@ class CommandTemplate:
     """Template from which all commands will inherit"""
     usr = create_observer(get_location())
 
-    planets = ['Mercury', 'Venus', 'Mars', 'Jupiter',
-               'Saturn', 'Uranus', 'Neptune']
+    planets = {'Mercury': ephem.Mercury(), 'Venus': ephem.Venus(),
+               'Mars': ephem.Mars(), 'Jupiter': ephem.Jupiter(),
+               'Saturn': ephem.Saturn(), 'Uranus': ephem.Uranus(),
+               'Neptune': ephem.Neptune()}
 
     def __init__(self, options, *args, **kwargs):
         self.options = options
