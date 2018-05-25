@@ -2,6 +2,7 @@ import json
 import requests
 import ephem
 from datetime import datetime
+from string import capwords
 
 
 def get_location():
@@ -34,15 +35,35 @@ class CommandTemplate:
     """Template from which all commands will inherit"""
     usr = create_observer(get_location())
 
-    planets = {'Mercury': ephem.Mercury(), 'Venus': ephem.Venus(),
-               'Mars': ephem.Mars(), 'Jupiter': ephem.Jupiter(),
-               'Saturn': ephem.Saturn(), 'Uranus': ephem.Uranus(),
-               'Neptune': ephem.Neptune()}
+    objects = {}
 
     def __init__(self, options, *args, **kwargs):
         self.options = options
         self.args = args
         self.kwargs = kwargs
+        usr, objects = self.usr, self.objects
+
+        # Build user's custom set of objects
+        if options['OBJECTS']:
+            candidates = options['OBJECTS'].split(',')
+            build_objects(candidates, objects, usr)
+
+        else:
+            # Default objects are solar system planets
+            for candidate in ephem._libastro.builtin_planets():
+                if candidate[1] == "Planet" and candidate[2] != "Sun":
+                    objects[candidate[2]] = getattr(ephem, candidate[2])(usr)
 
     def run(self):
         raise NotImplementedError('This command has not been implemented!')
+
+
+def build_objects(candidates, objects, usr):
+    """Modify `objects` dict to contain PyEphem entry corresponding to
+        `candidates` keys"""
+    for candidate in candidates:
+        candidate = capwords(candidate.lower())
+        try:
+            objects[candidate] = getattr(ephem, candidate)(usr)
+        except AttributeError:
+            pass

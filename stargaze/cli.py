@@ -2,7 +2,7 @@
 stargaze
 
 Usage:
-  stargaze visible
+  stargaze visible [OBJECTS]
   stargaze -h | --help
   stargaze --version
 
@@ -12,6 +12,7 @@ Options:
 
 Examples:
   stargaze visible
+  stargaze visible 'mars, jupiter, saturn, europa'
 
 Help:
   For help, please see the Github repository:

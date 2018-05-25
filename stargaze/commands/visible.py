@@ -21,20 +21,20 @@ class Visible(CommandTemplate):
             if sun_angle <= -18:
                 sun_status = Fore.GREEN
 
-        for planet, obj in self.planets.items():
+        for obj, ephem_obj in self.objects.items():
             alt_symbol = '↓'
-            # Planet is rising
-            if usr.next_antitransit(obj) > usr.next_transit(obj):
+            # Object is rising
+            if usr.next_antitransit(ephem_obj) > usr.next_transit(ephem_obj):
                 alt_symbol = '↑'
             # NOTE: needs to come after rising/setting calculation
-            obj.compute(usr)
+            ephem_obj.compute(usr)
             info_str = ('%8s: altitude: %5.1f deg %s, azimuth: %5.1f deg'
-                        % (planet, obj.alt * deg_to_rad, alt_symbol,
-                            obj.az * deg_to_rad))
+                        % (obj, ephem_obj.alt * deg_to_rad, alt_symbol,
+                            ephem_obj.az * deg_to_rad))
             if sun_status == Fore.RED:
                 print(sun_status + info_str + ', sun\'s still up')
-            elif obj.alt * deg_to_rad < 0:
-                print(Fore.RED + info_str + ', planet beneath horizon')
+            elif ephem_obj.alt * deg_to_rad < 0:
+                print(Fore.RED + info_str + ', object beneath horizon')
             elif sun_status == Fore.YELLOW:
                 print(sun_status + info_str +
                       ', viewing may be difficult during twilight')
