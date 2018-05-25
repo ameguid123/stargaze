@@ -45,8 +45,7 @@ class CommandTemplate:
 
         # Build user's custom set of objects
         if options['OBJECTS']:
-            candidates = options['OBJECTS'].split(',')
-            build_objects(candidates, objects, usr)
+            build_objects(options['OBJECTS'], objects, usr)
 
         else:
             # Default objects are solar system planets
