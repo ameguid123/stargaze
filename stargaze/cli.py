@@ -3,8 +3,12 @@ stargaze
 
 Usage:
   stargaze visible [OBJECTS ...]
+  stargaze plan OBJECTS ...
   stargaze -h | --help
   stargaze --version
+
+Arguments:
+  OBJECTS                   Celestial objects you're interested in.
 
 Options:
   -h --help                 Show this screen.
@@ -13,6 +17,7 @@ Options:
 Examples:
   stargaze visible
   stargaze visible mars jupiter saturn europa
+  stargaze plan venus mercury
 
 Help:
   For help, please see the Github repository:
