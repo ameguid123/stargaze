@@ -5,6 +5,9 @@ import math
 from colorama import Fore
 from datetime import datetime
 from string import capwords
+import dateparser
+import pytz
+from tzlocal import get_localzone as localtz
 
 
 def get_location():
@@ -65,6 +68,15 @@ class CommandTemplate:
             for candidate in ephem._libastro.builtin_planets():
                 if candidate[1] == 'Planet' and candidate[2] != 'Sun':
                     objects[candidate[2]] = getattr(ephem, candidate[2])(usr)
+
+        # Change user's date if specified
+        if options['-t']:
+            try:
+                local_dt = localtz().localize(dateparser.parse(options['-t']))
+                print("Time set to: " + local_dt.strftime("%Y-%m-%d %H:%M:%S"))
+                usr.date = local_dt.astimezone(pytz.utc)
+            except:
+                print("Could not interpret date, using local time")
 
     def run(self):
         raise NotImplementedError('This command has not been implemented!')
