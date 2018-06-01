@@ -8,13 +8,40 @@ from string import capwords
 import dateparser
 import pytz
 from tzlocal import get_localzone as localtz
+import pickle
+import os
+from os.path import expanduser, isfile
+from collections import OrderedDict
+import sys
+
+CACHE_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.location_cache'
+
+# TODO: MAJOR need to migrate to new geoip format by July 1st, 2018
+# TODO: manual specification of latlon+better file cleanup than garbage collect
 
 
 def get_location():
     """Get user's latitude and longitude using freegeoip.net"""
-    req = (requests.get('http://freegeoip.net/json'))
-    loc = json.loads(req.text)
-    return (str(loc['latitude']), str(loc['longitude']))
+    if isfile(CACHE_FILE):
+        location_cache = pickle.load(open(CACHE_FILE, "rb"))
+    else:
+        location_cache = OrderedDict()
+    try:
+        req = (requests.get('http://freegeoip.net/json'))
+        loc = json.loads(req.text)
+        latlon = (str(loc['latitude']), str(loc['longitude']))
+        key = ','.join(latlon)
+        if key not in location_cache:
+            location_cache[key] = loc
+            pickle.dump(location_cache, open(CACHE_FILE, "wb"))
+    except:
+        # Use most recently added location
+        if not location_cache.items():
+            print("Must use online first!")
+            sys.exit(1)
+        loc = list(location_cache.items())[-1][1]
+        latlon = (str(loc['latitude']), str(loc['longitude']))
+    return latlon
 
 
 def create_observer(usr_coords):
