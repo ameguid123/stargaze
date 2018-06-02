@@ -7,7 +7,7 @@ import math
 class Plan(CommandTemplate):
     """List view time information for celestial objects from user's location"""
     def run(self):
-        usr = CommandTemplate.usr
+        usr = self.usr
 
         for obj, ephem_obj in self.objects.items():
             self.print_status(obj, ephem_obj)
@@ -17,6 +17,8 @@ class Plan(CommandTemplate):
                 next_set = usr.next_setting(ephem_obj)
             except AttributeError:
                 continue
+
+            ephem_obj.compute(usr)
 
             # TODO: Potentially better way than these strftimes
             if next_rise > next_set:

@@ -22,7 +22,7 @@ CACHE_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.location_cache'
 # TODO: manual specification of latlon+better file cleanup than garbage collect
 
 
-def get_location():
+def get_location(specifyCustomLoc):
     """Get user's latitude and longitude using freegeoip.net. If offline,
        allows user to select from previous 10 locations used or specify a
        custom location with a latitude and longitude"""
@@ -30,6 +30,10 @@ def get_location():
         location_cache = pickle.load(open(CACHE_FILE, 'rb'))
     else:
         location_cache = OrderedDict()
+
+    if specifyCustomLoc:
+        return (choose_location(list(location_cache.items())[:10]))
+
     try:
         req = (requests.get('http://freegeoip.net/json'))
         loc = json.loads(req.text)
@@ -40,30 +44,7 @@ def get_location():
             pickle.dump(location_cache, open(CACHE_FILE, 'wb'))
     # TODO: specific except
     except:
-        options = ['{0}, {1} ({2}, {3})'.format(
-                                                elem[1]['city'],
-                                                elem[1]['region_name'],
-                                                elem[1]['latitude'],
-                                                elem[1]['longitude']
-                                                )
-                   for elem in list(location_cache.items())[:10]]
-        questions = [
-            inquirer.List(
-                'location',
-                message='Choose location or enter custom location',
-                choices=options + ['custom']
-            ),
-        ]
-        answers = inquirer.prompt(questions)
-        loc = (answers['location'])
-        if loc == 'custom':
-            loc = input('Enter custom location as: `(latitude, longitude)`:\n')
-        try:
-            latlon = literal_eval((loc[loc.find("("):loc.find(")") + 1]))
-            latlon = (str(latlon[0]), str(latlon[1]))
-        except (SyntaxError, ValueError):
-            print('ERROR: Invalid custom location entry')
-            sys.exit(1)
+        return (choose_location(list(location_cache.items())[:10]))
     return latlon
 
 
@@ -97,16 +78,42 @@ def build_objects(candidates, objects, usr):
             pass
 
 
+def choose_location(option_list):
+    options = ['{0}, {1} ({2}, {3})'.format(
+                                            elem[1]['city'],
+                                            elem[1]['region_name'],
+                                            elem[1]['latitude'],
+                                            elem[1]['longitude']
+                                            )
+               for elem in option_list]
+    questions = [
+        inquirer.List(
+            'location',
+            message='Choose location or enter custom location',
+            choices=options + ['custom']
+        ),
+    ]
+    answers = inquirer.prompt(questions)
+    loc = (answers['location'])
+    if loc == 'custom':
+        loc = input('Enter custom location as: `(latitude, longitude)`:\n')
+    try:
+        latlon = literal_eval((loc[loc.find("("):loc.find(")") + 1]))
+        return (str(latlon[0]), str(latlon[1]))
+    except (SyntaxError, ValueError):
+        print('ERROR: Invalid custom location entry')
+        sys.exit(1)
+
+
 class CommandTemplate:
     """Template from which all commands will inherit"""
-    usr = create_observer(get_location())
-
-    objects = {}
 
     def __init__(self, options, *args, **kwargs):
         self.options = options
         self.args = args
         self.kwargs = kwargs
+        self.usr = create_observer(get_location(options['-l']))
+        self.objects = {}
         usr, objects = self.usr, self.objects
 
         # Build user's custom set of objects

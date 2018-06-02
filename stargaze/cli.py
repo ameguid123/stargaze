@@ -2,8 +2,8 @@
 stargaze
 
 Usage:
-  stargaze visible [-t TIME] [OBJECTS ...]
-  stargaze plan OBJECTS ...
+  stargaze visible [-l] [-t TIME] [OBJECTS ...]
+  stargaze plan [-l] OBJECTS ...
   stargaze -h | --help
   stargaze --version
 
@@ -14,12 +14,14 @@ Options:
   -h --help                 Show this screen.
   --version                 Show version.
   -t TIME                   Specify a viewing time.
+  -l                        Specify a location.
 
 Examples:
   stargaze visible
   stargaze visible mars jupiter saturn europa
   stargaze visible -t "tomorrow at 11pm" neptune uranus pluto
   stargaze plan venus mercury
+  stargaze plan -l saturn jupiter
 
 Help:
   For help, please see the Github repository:
