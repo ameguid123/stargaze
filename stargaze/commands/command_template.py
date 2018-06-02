@@ -12,6 +12,8 @@ import pickle
 import os
 from os.path import expanduser, isfile
 from collections import OrderedDict
+import inquirer
+from ast import literal_eval
 import sys
 
 CACHE_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.location_cache'
@@ -21,9 +23,11 @@ CACHE_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.location_cache'
 
 
 def get_location():
-    """Get user's latitude and longitude using freegeoip.net"""
+    """Get user's latitude and longitude using freegeoip.net. If offline,
+       allows user to select from previous 10 locations used or specify a
+       custom location with a latitude and longitude"""
     if isfile(CACHE_FILE):
-        location_cache = pickle.load(open(CACHE_FILE, "rb"))
+        location_cache = pickle.load(open(CACHE_FILE, 'rb'))
     else:
         location_cache = OrderedDict()
     try:
@@ -33,14 +37,33 @@ def get_location():
         key = ','.join(latlon)
         if key not in location_cache:
             location_cache[key] = loc
-            pickle.dump(location_cache, open(CACHE_FILE, "wb"))
+            pickle.dump(location_cache, open(CACHE_FILE, 'wb'))
+    # TODO: specific except
     except:
-        # Use most recently added location
-        if not location_cache.items():
-            print("Must use online first!")
+        options = ['{0}, {1} ({2}, {3})'.format(
+                                                elem[1]['city'],
+                                                elem[1]['region_name'],
+                                                elem[1]['latitude'],
+                                                elem[1]['longitude']
+                                                )
+                   for elem in list(location_cache.items())[:10]]
+        questions = [
+            inquirer.List(
+                'location',
+                message='Choose location or enter custom location',
+                choices=options + ['custom']
+            ),
+        ]
+        answers = inquirer.prompt(questions)
+        loc = (answers['location'])
+        if loc == 'custom':
+            loc = input('Enter custom location as: `(latitude, longitude)`:\n')
+        try:
+            latlon = literal_eval((loc[loc.find("("):loc.find(")") + 1]))
+            latlon = (str(latlon[0]), str(latlon[1]))
+        except (SyntaxError, ValueError):
+            print('ERROR: Invalid custom location entry')
             sys.exit(1)
-        loc = list(location_cache.items())[-1][1]
-        latlon = (str(loc['latitude']), str(loc['longitude']))
     return latlon
 
 
@@ -100,10 +123,10 @@ class CommandTemplate:
         if options['-t']:
             try:
                 local_dt = localtz().localize(dateparser.parse(options['-t']))
-                print("Time set to: " + local_dt.strftime("%Y-%m-%d %H:%M:%S"))
+                print('Time set to: ' + local_dt.strftime('%Y-%m-%d %H:%M:%S'))
                 usr.date = local_dt.astimezone(pytz.utc)
             except:
-                print("Could not interpret date, using local time")
+                print('Could not interpret date, using local time')
 
     def run(self):
         raise NotImplementedError('This command has not been implemented!')
