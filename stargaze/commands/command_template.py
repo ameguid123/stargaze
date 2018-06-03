@@ -7,7 +7,7 @@ from datetime import datetime
 from string import capwords
 import dateparser
 import pytz
-from tzlocal import get_localzone as localtz
+from tzwhere import tzwhere
 import pickle
 import os
 from os.path import expanduser, isfile
@@ -17,9 +17,11 @@ from ast import literal_eval
 import sys
 
 CACHE_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.location_cache'
+deg_to_rad = 180.0 / math.pi
+
 
 # TODO: MAJOR need to migrate to new geoip format by July 1st, 2018
-# TODO: manual specification of latlon+better file cleanup than garbage collect
+# TODO: better file cleanup than garbage collect
 
 
 def get_location(specifyCustomLoc):
@@ -127,9 +129,14 @@ class CommandTemplate:
                     objects[candidate[2]] = getattr(ephem, candidate[2])(usr)
 
         # Change user's date if specified
+        # TODO: Timezone from user specified location = more expensive-tzwhere?
         if options['-t']:
             try:
-                local_dt = localtz().localize(dateparser.parse(options['-t']))
+                timezone_str = tzwhere.tzwhere().tzNameAt(
+                    float(usr.lat * deg_to_rad), float(usr.lon * deg_to_rad))
+                local_dt = pytz.timezone(timezone_str).localize(
+                    dateparser.parse(options['-t']))
+                print('Timezone is: ' + timezone_str)
                 print('Time set to: ' + local_dt.strftime('%Y-%m-%d %H:%M:%S'))
                 usr.date = local_dt.astimezone(pytz.utc)
             except:
@@ -142,7 +149,6 @@ class CommandTemplate:
         """Given a celestial object name `obj` and the PyEphem object
         representing it `ephem_obj` produce relevant status printout"""
         usr = self.usr
-        deg_to_rad = 180.0 / math.pi
         sun = ephem.Sun()
         sun.compute(usr)
         sun_angle = sun.alt * deg_to_rad
