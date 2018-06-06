@@ -20,7 +20,6 @@ CACHE_FILE = os.path.dirname(os.path.realpath(__file__)) + '/.location_cache'
 deg_to_rad = 180.0 / math.pi
 
 
-# TODO: MAJOR need to migrate to new geoip format by July 1st, 2018
 # TODO: better file cleanup than garbage collect
 
 
@@ -37,7 +36,8 @@ def get_location(specifyCustomLoc):
         return (choose_location(list(location_cache.items())[:10]))
 
     try:
-        req = (requests.get('http://freegeoip.net/json'))
+        req = (requests.get('http://api.ipstack.com/check?'
+                            'access_key=6350e260f0dc9f937f5894740255c43d'))
         loc = json.loads(req.text)
         latlon = (str(loc['latitude']), str(loc['longitude']))
         key = ','.join(latlon)
@@ -81,6 +81,8 @@ def build_objects(candidates, objects, usr):
 
 
 def choose_location(option_list):
+    """Presents the user with a set of previous locations and an option to
+    enter a custom location. Returns the location as (lat, long), or errors"""
     options = ['{0}, {1} ({2}, {3})'.format(
                                             elem[1]['city'],
                                             elem[1]['region_name'],
