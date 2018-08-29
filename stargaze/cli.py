@@ -4,6 +4,7 @@ stargaze
 Usage:
   stargaze visible [-l] [-t TIME] [OBJECTS ...]
   stargaze plan [-l] OBJECTS ...
+  stargaze logo
   stargaze -h | --help
   stargaze --version
 
@@ -22,6 +23,7 @@ Examples:
   stargaze visible -t "tomorrow at 11pm" neptune uranus pluto
   stargaze plan venus mercury
   stargaze plan -l saturn jupiter
+  stargaze logo
 
 Help:
   For help, please see the Github repository:
@@ -39,7 +41,6 @@ from colorama import init
 
 def main():
     """CLI entrypoint"""
-    from colorama import init
     init()
     import stargaze.commands
     options = docopt(__doc__, version=VERSION)
